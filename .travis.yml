@@ -28,3 +28,16 @@ after_success:
     - docker push kaitingpeck/multi-nginx
     - docker push kaitingpeck/multi-server
     - docker push kaitingpeck/multi-worker
+
+deploy:
+    provider: elasticbeanstalk
+    region: us-east-1
+    app: multi-docker
+    env: MultiDocker-env
+    # travis zips us project and puts it in the S3 bucket
+    bucket_name: elasticbeanstalk-us-east-1-199166987708
+    bucket_path: 'docker-multi'
+    on:
+        branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
