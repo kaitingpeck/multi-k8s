@@ -1,0 +1,30 @@
+language: generic 
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t kaitingpeck/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+    # use default Dockerfile (production)
+    - docker build -t kaitingpeck/multi-client ./client
+    - docker build -t kaitingpeck/multi-nginx ./nginx
+    - docker build -t kaitingpeck/multi-server ./server
+    - docker build -t kaitingpeck/multi-worker ./worker
+    
+    # Log in to the docker CLI
+    # echo $DOCKER_PASSWORD - retrieve DOCKER_PASSWORD from environment variable and emit that over stdin
+    # and input to the next command (on the other side of the pipe - |)
+    # i.e., emitted to the stdin channel for the next command
+    # tell 'docker login' it can expect to receive the password over stdin
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+    # Take those images and push them to docker hub
+    - docker push kaitingpeck/multi-client
+    - docker push kaitingpeck/multi-nginx
+    - docker push kaitingpeck/multi-server
+    - docker push kaitingpeck/multi-worker
