@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: database-persistent-volume-claim
+spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 2Gi
+# if we attach this claim to a pod, k8s must find an instance of storage (slice of our hard drive)
+# that meets these requirements (2G of space with specified access mode)

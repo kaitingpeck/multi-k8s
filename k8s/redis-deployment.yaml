@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: redis-deployment
+spec:
+    replicas: 1 # *redis has a cluster mode
+    selector:
+        matchLabels:
+            component: redis # component of our app the Deployment object will manage
+    template:
+        metadata:
+            labels:
+                component: redis
+        spec:
+            containers:
+                - name: redis
+                  image: redis # from public repo on Dockerhub
+                  ports:
+                    - containerPort: 6379

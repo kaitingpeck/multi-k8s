@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: postgres-deployment
+spec:
+    replicas: 1 # can use cluster deployment to increase availability, bandwidth, throughput
+    selector:
+        matchLabels:
+            component: postgres # component of our app the Deployment object will manage
+    template:
+        metadata:
+            labels:
+                component: postgres
+        spec:
+            # sets up request on the pod to tell k8s that we need some type of long-term
+            # storage meeting the requirements in the PVC 
+            volumes:
+                - name: postgres-storage
+                  persistentVolumeClaim:
+                    claimName: database-persistent-volume-claim
+            containers:
+                - name: postgres
+                  image: postgres # from public repo on Dockerhub
+                  ports:
+                    - containerPort: 5432
+                  volumeMounts:
+                    - name: postgres-storage # match the name of the PV that we asked k8s for in volumes section above
+                      # where in the container the storage should be made available
+                      # anything the container stores in this path will be stored in the volume
+                      # i.e. data directory postgres uses to store data on the filesystem/hard drive
+                      mountPath: /var/lib/postgresql/data
+                      subPath: postgres 
+                      # any data in container stored in mountPath will be stored in a folder called postgres in the PVC
+                  env:
+                    # when postgres image sees env var of POSTGRES_PASSWORD, 
+                    # it will use that as the password instead of the default password
+                    - name: POSTGRES_PASSWORD # overwrite default password
+                      valueFrom:
+                        secretKeyRef:
+                          name: pgpassword
+                          key: PGPASSWORD
+                        

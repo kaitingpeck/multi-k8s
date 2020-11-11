@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: worker-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: worker
+    template:
+        metadata:
+            labels:
+                component: worker
+        spec:
+            containers:
+                - name: worker
+                  image: stephengrider/multi-worker
+                  # no other object needs access to the worker container, 
+                  # so it doesn't need any ports or service 
+                  # (only needed for requests going into a set of pods/a single pod) assigned to it
+                  env: 
+                    - name: REDIS_HOST # reference to tell the container how it can connect to redis
+                      value: redis-cluster-ip-service
+                    - name: REDIS_PORT
+                      value: '6379' # port setting in redis-cluster-ip-service config file
