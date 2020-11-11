@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1alpha2 # in cert manager bucket of objects, not included in k8s by default
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # address cert manager should reach out to when trying to establish the verification process
+    # link to letsencrypt api used for setting up communication back and forth
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: "kaitingpeck@gmail.com"
+    privateKeySecretRef: 
+        name: letsencrypt-prod
+        # LE sends over a secret key related to our record with it, and is used in the verification process
+        # determines response when LE sends over randomly generated url it will make request to
+    solvers:
+      - http01: # use http option of getting a cert
+          ingress:
+            class: nginx

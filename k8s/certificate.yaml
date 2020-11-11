@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+    name: k8s-multi-com-tls
+spec:
+    # specifies where secret (created as part of cert) should be stored after it's obtained by cert manager
+    secretName: k8s-multi-com
+    issuerRef:
+        name: letsencrypt-prod # see issuer.yaml
+        kind: ClusterIssuer
+    commonName: k8s-multi.com # what's going to be put on the cert, saying that the cert is good for this commonName (should use domain)
+    dnsNames: # list of domains that should be associated with the given cert
+        - k8s-multi.com
+        - www.k8s-multi.com
+    acme:
+        config:
+            - http01:
+                ingressClass: nginx
+              domains: # domain that the verification process will try to access (between letsencrypt and k8s cluster)
+                - k8s-multi.com
+                - www.k8s-multi.com
