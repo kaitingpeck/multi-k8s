@@ -1,7 +1,15 @@
 sudo: required
 services:
     - docker
+env:
+    global:
+        # allow deploy.sh to access this without re-running the command again
+        - GIT_SHA=$(git rev-parse HEAD)
+        # so Gcloud CLI doesn't display prompts requiring user input
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 before_install:
+    # unencrypts file and puts it in root project directory
+    - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
     # set up google cloud locally
     # download google cloud SDK, then install locally on instance assigned to us by travis CI
     - curl https://sdk.cloud.google.com | bash > /dev/null;
@@ -11,5 +19,19 @@ before_install:
     - gcloud components update kubectl
     # authorize gcloud SDK
     - gcloud auth activate-service-account --key-file service-account.json
-    # unencrypts file
-    - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+    - gcloud config set project multi-k8s-295306
+    - gcloud config set compute/zone asia-southeast1-a
+    # tell gcloud which cluster to work with for any k8s commands
+    - gcloud container clusters get-credentials multi-cluster
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t kaitingpeck/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    # so that it exits with non-zero status code if tests are ok (and not hang at watch mode)
+    - docker run -e CI=true USERNAME/react-test npm test
+
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    on:
+        branch: master
