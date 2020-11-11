@@ -28,7 +28,7 @@ before_install:
 
 script:
     # so that it exits with non-zero status code if tests are ok (and not hang at watch mode)
-    - docker run -e CI=true USERNAME/react-test npm test
+    - docker run -e CI=true kaitingpeck/react-test npm test
 
 deploy:
     provider: script
