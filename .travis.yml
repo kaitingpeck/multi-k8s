@@ -1,0 +1,15 @@
+sudo: required
+services:
+    - docker
+before_install:
+    # set up google cloud locally
+    # download google cloud SDK, then install locally on instance assigned to us by travis CI
+    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    # apply config in default install directory of google cloud sdk to modify shell in travis CI
+    - source $HOME/google-cloud-sdk/path.bash.inc
+    # install kubectl in travis env
+    - gcloud components update kubectl
+    # authorize gcloud SDK
+    - gcloud auth activate-service-account --key-file service-account.json
+    # unencrypts file
+    - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
